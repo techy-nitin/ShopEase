@@ -5,8 +5,8 @@ export default function ProfilePage() {
   const [focus, setFocus] = useState(null);
 
   // ✅ Get current user from localStorage
-  const currentUser = JSON.parse(localStorage.getItem("user"));
-
+const currentUser = JSON.parse(localStorage.getItem("user"));
+console.log("currentUser:", currentUser); // ✅ Add this line
   const handleDelete = async (userId) => {  
     const isConfirmed = window.confirm("Delete account permanently?");
     if (!isConfirmed) return;
