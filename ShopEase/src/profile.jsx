@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import { API_BASE } from "./config";
+
 export default function ProfilePage() {
   const [focus, setFocus] = useState(null);
+
+  // ✅ Get current user from localStorage
+  const currentUser = JSON.parse(localStorage.getItem("user"));
+
   const handleDelete = async (userId) => {  
     const isConfirmed = window.confirm("Delete account permanently?");
     if (!isConfirmed) return;
@@ -14,6 +19,7 @@ export default function ProfilePage() {
         const data = await response.json();
 
         if (response.ok) {
+            localStorage.removeItem("user"); // ✅ Clear user on delete
             window.location.href = "/login";
         } else {
             alert(data.error || "Failed to delete account");
@@ -22,7 +28,8 @@ export default function ProfilePage() {
         console.error(error);
         alert("Something went wrong");
     }
-};
+  };
+
   const styles = {
     container: {
       background: "#0f1111",
@@ -107,7 +114,7 @@ export default function ProfilePage() {
       border: "none",
       color: "black",
     },
-     delete: {
+    delete: {
       background: "Red",
       border: "none",
       color: "black",
@@ -217,7 +224,7 @@ export default function ProfilePage() {
           </button>
           <button
             type="button"
-            onClick={() => handleDelete(currentUser.id)}
+            onClick={() => handleDelete(currentUser?.id)}
             style={{ ...styles.btn, ...styles.delete }}>
             DELETE ACCOUNT
           </button>
