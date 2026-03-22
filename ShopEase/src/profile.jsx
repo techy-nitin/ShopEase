@@ -7,7 +7,7 @@ export default function ProfilePage() {
     if (!isConfirmed) return;
 
     try {
-        const response = await fetch(`http://localhost:8081/delete/${userId}`, {
+        const response = await fetch(`${API_BASE}/delete/${userId}`, {
             method: "DELETE",  // should be uppercase, though fetch is case-insensitive
         });
 

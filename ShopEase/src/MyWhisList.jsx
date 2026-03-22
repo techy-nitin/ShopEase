@@ -54,14 +54,14 @@ export default function Wishlist() {
       const userId = getUserId();
       if (!userId) { setWishlistData([]); return; }
 
-      const res = await fetch(`http://localhost:8081/wishlist/${userId}`);
+      const res = await fetch(`${API_BASE}/wishlist/${userId}`);
       const wishlistItems = await res.json();
       if (!res.ok) throw new Error(wishlistItems.error || "Failed to fetch");
 
       const fullData = await Promise.all(
         wishlistItems.map(async (item) => {
           try {
-            const productRes = await fetch(`http://localhost:8081/api/products/${item.productId}`);
+            const productRes = await fetch(`${API_BASE}/api/products/${item.productId}`);
             const productData = await productRes.json();
             if (!productRes.ok) throw new Error("Failed to fetch product");
 
@@ -108,7 +108,7 @@ export default function Wishlist() {
       const userId = getUserId();
       if (!userId) { alert("Please login first"); return; }
 
-      const res = await fetch("http://localhost:8081/api/cart/add", {
+      const res = await fetch("${API_BASE}/api/cart/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: Number(userId), productId: Number(item.productId), quantity: 1 }),
@@ -116,7 +116,7 @@ export default function Wishlist() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Failed to add to cart");
 
-      await fetch(`http://localhost:8081/wishlist/remove?userid=${userId}&productId=${item.productId}`, { method: "DELETE" });
+      await fetch(`${API_BASE}/wishlist/remove?userid=${userId}&productId=${item.productId}`, { method: "DELETE" });
       setWishlistData((prev) => prev.filter((w) => w.productId !== item.productId));
     } catch (err) { alert(err.message || "Failed to add to cart"); }
     finally { setActionLoading(null); }
@@ -128,7 +128,7 @@ export default function Wishlist() {
       const userId = getUserId();
       if (!userId) { alert("Please login first"); return; }
 
-      const res = await fetch(`http://localhost:8081/wishlist/remove?userid=${userId}&productId=${item.productId}`, { method: "DELETE" });
+      const res = await fetch(`${API_BASE}/wishlist/remove?userid=${userId}&productId=${item.productId}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete");
       setWishlistData((prev) => prev.filter((w) => w.productId !== item.productId));
     } catch (err) { alert(err.message || "Failed to delete"); }

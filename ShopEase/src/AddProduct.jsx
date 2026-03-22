@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { API_BASE } from "./config";
 const CATEGORY_OPTIONS = [
   { id: 1, label: "Mobile Phones" },
   { id: 10, label: "Laptops" },
@@ -96,7 +96,7 @@ export default function AddProduct() {
         imageUrl: formData.imageUrl.trim(),
       };
 
-      const res = await fetch("http://localhost:8081/api/seller/products", {
+      const res = await fetch("${API_BASE}/api/seller/products", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

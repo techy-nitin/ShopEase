@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import { API_BASE } from "./config";
 // ─── Fonts & Animations ───────────────────────────────────────────────────────
 const globalStyles = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap');
@@ -70,14 +70,14 @@ export default function Navbar() {
   }
 
   async function fallbackIPLocation() {
-    try {
-      const res  = await fetch("http://localhost:8081/api/location/get");
-      const data = await res.json();
-      setLocation({ latitude: null, longitude: null, district: data.district, pincode: data.pincode });
-    } catch {
-      setLocation({ latitude: null, longitude: null, district: "Unknown", pincode: "000000" });
-    }
+  try {
+    const res = await fetch(`${API_BASE}/api/location/get`);
+    const data = await res.json();
+    setLocation({ latitude: null, longitude: null, district: data.district, pincode: data.pincode });
+  } catch {
+    setLocation({ latitude: null, longitude: null, district: "Unknown", pincode: "000000" });
   }
+}
 
   function getcurrent() {
     if (!navigator.geolocation) { fallbackIPLocation(); return; }
@@ -85,8 +85,8 @@ export default function Navbar() {
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
-          const res  = await fetch("http://localhost:8081/api/location/get-accurate", {
-            method: "POST",
+const res = await fetch(`${API_BASE}/api/location/get-accurate`, {        
+      method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ latitude, longitude }),
           });

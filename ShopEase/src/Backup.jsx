@@ -29,10 +29,10 @@ export default function ProductListingPage() {
   };
 
   useEffect(() => {
-    let url = "http://localhost:8081/api/products";
+    let url = "${API_BASE}/api/products";
 
     if (keyword) {
-      url = `http://localhost:8081/api/products/search?keyword=${encodeURIComponent(keyword)}`;
+      url = `${API_BASE}/api/products/search?keyword=${encodeURIComponent(keyword)}`;
     }
 
     fetch(url)
@@ -57,7 +57,7 @@ export default function ProductListingPage() {
         const userId = getUserId();
         if (!userId) return;
 
-        const res = await fetch(`http://localhost:8081/wishlist/${userId}`);
+        const res = await fetch(`${API_BASE}/wishlist/${userId}`);
         const data = await res.json();
 
         if (res.ok && Array.isArray(data)) {
@@ -124,7 +124,7 @@ export default function ProductListingPage() {
         productId: Number(productId),
       };
 
-      const res = await fetch("http://localhost:8081/wishlist/add", {
+      const res = await fetch("${API_BASE}/wishlist/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

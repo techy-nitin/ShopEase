@@ -102,7 +102,7 @@ export default function ItemSliderPage() {
   useEffect(() => {
     if (!item) { setLoading(false); return; }
     setLoading(true);
-    fetch(`http://localhost:8081/api/products/category/${item.categoryId}`)
+    fetch(`${API_BASE}/api/products/category/${item.categoryId}`)
       .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
       .then((d) => { setProducts(Array.isArray(d) ? d : []); setLoading(false); })
       .catch(() => { setProducts([]); setLoading(false); });

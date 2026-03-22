@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { API_BASE } from "./config";
 const categoryConfig = {
   laptop: {
     title: "Laptops",
@@ -49,7 +49,7 @@ export default function CategorySliderPage() {
 
   useEffect(() => {
     if (!config) return;
-    fetch(`http://localhost:8081/api/products/category/${config.categoryId}`)
+    fetch(`${API_BASE}/api/products/category/${config.categoryId}`)
       .then((res) => res.json())
       .then((data) => setProducts(Array.isArray(data) ? data : []))
       .catch(() => setProducts([]));

@@ -50,8 +50,8 @@ export default function SellerDashboard() {
     try {
       setLoading(true);
       const [dashboardRes, productsRes] = await Promise.all([
-        fetch(`http://localhost:8081/api/seller/dashboard/${sellerId}`),
-        fetch(`http://localhost:8081/api/seller/products/${sellerId}`),
+        fetch(`${API_BASE}/api/seller/dashboard/${sellerId}`),
+        fetch(`${API_BASE}/api/seller/products/${sellerId}`),
       ]);
       let d = {}, p = [];
       if (dashboardRes.ok) d = await dashboardRes.json();
@@ -90,21 +90,21 @@ export default function SellerDashboard() {
   const handleDeleteProduct = async (productId) => {
     if (!window.confirm("Delete this product?")) return;
     try {
-      const res = await fetch(`http://localhost:8081/api/seller/products/${productId}`, { method: "DELETE" });
+      const res = await fetch(`${API_BASE}/api/seller/products/${productId}`, { method: "DELETE" });
       const data = await res.json();
       if (res.ok) { alert(data.message || "Deleted"); fetchDashboardData(); }
       else alert(data.error || "Failed to delete");
     } catch { alert("Something went wrong"); }
   };
 
-  const handleExportProducts = () => window.open(`http://localhost:8081/api/seller/export/products/${sellerId}`, "_blank");
-  const handleExportOrders = () => window.open(`http://localhost:8081/api/seller/export/orders/${sellerId}`, "_blank");
+  const handleExportProducts = () => window.open(`${API_BASE}/api/seller/export/products/${sellerId}`, "_blank");
+  const handleExportOrders = () => window.open(`${API_BASE}/api/seller/export/orders/${sellerId}`, "_blank");
 
   const handleDeregisterSeller = async () => {
     if (!window.confirm("Deregister seller account? Make sure all products are deleted first.")) return;
     try {
       setActionLoading(true);
-      const res = await fetch(`http://localhost:8081/api/seller/deregister/${sellerId}`, { method: "DELETE" });
+      const res = await fetch(`${API_BASE}/api/seller/deregister/${sellerId}`, { method: "DELETE" });
       const data = await res.json();
       if (res.ok) {
         localStorage.setItem("user", JSON.stringify({ ...savedUser, role: "user" }));

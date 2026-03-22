@@ -23,7 +23,7 @@ export default function ProductDetailPage() {
   useEffect(() => {
     async function fetchProduct() {
       try {
-        const res = await fetch(`http://localhost:8081/api/products/${id}`);
+        const res = await fetch(`${API_BASE}/api/products/${id}`);
         if (!res.ok) throw new Error("Failed to fetch product");
         const result = await res.json();
         setData(result);
@@ -31,7 +31,7 @@ export default function ProductDetailPage() {
 
         const userId = getUserId();
         if (userId) {
-          const wishRes  = await fetch(`http://localhost:8081/wishlist/${userId}`);
+          const wishRes  = await fetch(`${API_BASE}/wishlist/${userId}`);
           const wishData = await wishRes.json();
           if (wishRes.ok && Array.isArray(wishData)) {
             setWishlist(wishData.some((item) => Number(item.productId) === Number(id)));
@@ -66,7 +66,7 @@ export default function ProductDetailPage() {
       if (!userId) { alert("Please login first"); return; }
       if (!id)     { alert("Product id not found"); return; }
       setCartLoading(true);
-      const res = await fetch("http://localhost:8081/api/cart/add", {
+      const res = await fetch("${API_BASE}/api/cart/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: Number(userId), productId: Number(id), quantity: 1 }),
@@ -83,7 +83,7 @@ export default function ProductDetailPage() {
       const userId = getUserId();
       if (!userId) { alert("Please login first"); return; }
       setWishlistLoading(true);
-      const res = await fetch("http://localhost:8081/wishlist/add", {
+      const res = await fetch("${API_BASE}/wishlist/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: Number(userId), productId: Number(id) }),

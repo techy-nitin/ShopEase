@@ -17,10 +17,10 @@ export default function ProductListingPage() {
   const getUserId       = () => getLoggedInUser()?.id;
 
   useEffect(() => {
-    let url = "http://localhost:8081/api/products";
-    if (keyword && categoryId) url = `http://localhost:8081/api/products/search/category/${categoryId}?keyword=${encodeURIComponent(keyword)}`;
-    else if (keyword)          url = `http://localhost:8081/api/products/search?keyword=${encodeURIComponent(keyword)}`;
-    else if (categoryId)       url = `http://localhost:8081/api/products/category/${categoryId}`;
+    let url = "${API_BASE}/api/products";
+    if (keyword && categoryId) url = `${API_BASE}/api/products/search/category/${categoryId}?keyword=${encodeURIComponent(keyword)}`;
+    else if (keyword)          url = `${API_BASE}/api/products/search?keyword=${encodeURIComponent(keyword)}`;
+    else if (categoryId)       url = `${API_BASE}/api/products/category/${categoryId}`;
 
     setLoading(true);
     fetch(url)
@@ -34,7 +34,7 @@ export default function ProductListingPage() {
       try {
         const userId = getUserId();
         if (!userId) return;
-        const res  = await fetch(`http://localhost:8081/wishlist/${userId}`);
+        const res  = await fetch(`${API_BASE}/wishlist/${userId}`);
         const data = await res.json();
         if (res.ok && Array.isArray(data)) setWishlistIds(data.map((item) => Number(item.productId)));
       } catch {}
@@ -72,7 +72,7 @@ export default function ProductListingPage() {
       const userId = getUserId();
       if (!userId || isWishlisted(productId)) return;
       setWishlistLoadingId(productId);
-      const res = await fetch("http://localhost:8081/wishlist/add", {
+      const res = await fetch("${API_BASE}/wishlist/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: Number(userId), productId: Number(productId) }),

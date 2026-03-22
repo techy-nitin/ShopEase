@@ -72,7 +72,7 @@ export default function BrandPage() {
       return;
     }
     setProductsLoading(true);
-    fetch(`http://localhost:8081/api/products/category/${brand.categoryId}`)
+    fetch(`${API_BASE}/api/products/category/${brand.categoryId}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch brand products");
         return res.json();

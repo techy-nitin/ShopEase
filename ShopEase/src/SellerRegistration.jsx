@@ -56,7 +56,7 @@ export default function SellerRegistration() {
     }
 
     try {
-      const res = await fetch(`http://localhost:8081/api/seller/status/${userId}`);
+      const res = await fetch(`${API_BASE}/api/seller/status/${userId}`);
       const text = await res.text();
       let data = {};
 
@@ -137,7 +137,7 @@ export default function SellerRegistration() {
     try {
       setLoading(true);
 
-      const res = await fetch("http://localhost:8081/api/seller/send-otp", {
+      const res = await fetch("${API_BASE}/api/seller/send-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -216,7 +216,7 @@ export default function SellerRegistration() {
         bodyData.address = formData.address;
       }
 
-      const res = await fetch("http://localhost:8081/api/seller/verify-otp", {
+      const res = await fetch("${API_BASE}/api/seller/verify-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -259,7 +259,7 @@ export default function SellerRegistration() {
     try {
       setCheckingStatus(true);
 
-      const res = await fetch(`http://localhost:8081/api/seller/status/${userId}`);
+      const res = await fetch(`${API_BASE}/api/seller/status/${userId}`);
       const text = await res.text();
       let data = {};
 
