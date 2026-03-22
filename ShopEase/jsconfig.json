@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",          // modern JS, works with Vite
+    "module": "ESNext",          // modern modules
+    "baseUrl": ".",              // root of your project
+    "paths": {
+      "@/*": ["src/*"]           // alias @ -> src
+    }
+  },
+  "include": ["src"]
+}
