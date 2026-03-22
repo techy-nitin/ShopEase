@@ -12,9 +12,9 @@ export default function ProfilePage() {
     if (!isConfirmed) return;
 
     try {
-        const response = await fetch(`${API_BASE}/delete/${userId}`, {
-            method: "DELETE", 
-        });
+        const response = await fetch(`${API_BASE}/api/auth/delete/${userId}`, {
+    method: "DELETE", 
+});
 
         const data = await response.json();
 
