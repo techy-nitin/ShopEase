@@ -2,7 +2,7 @@ import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import { useNavigate } from "react-router-dom";
-
+import { API_BASE } from "./config";
 import "./index.css";
 import "swiper/css";
 import "swiper/css/navigation";

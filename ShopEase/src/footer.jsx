@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-
+import { API_BASE } from "./config";
 const Footer = () => {
 
   const [email, setEmail] = useState("");

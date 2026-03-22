@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { API_BASE } from "./config";
 export default function SellerRegistration() {
   const navigate = useNavigate();
 
@@ -137,7 +137,7 @@ export default function SellerRegistration() {
     try {
       setLoading(true);
 
-      const res = await fetch("${API_BASE}/api/seller/send-otp", {
+      const res = await fetch(`${API_BASE}/api/seller/send-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -216,7 +216,7 @@ export default function SellerRegistration() {
         bodyData.address = formData.address;
       }
 
-      const res = await fetch("${API_BASE}/api/seller/verify-otp", {
+      const res = await fetch(`${API_BASE}/api/seller/verify-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

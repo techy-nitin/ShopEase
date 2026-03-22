@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+import { API_BASE } from "./config";
 export default function ProfilePage() {
   const [focus, setFocus] = useState(null);
   const handleDelete = async (userId) => {   // make function async

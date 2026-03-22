@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-
+import { API_BASE } from "./config";
 const Orders = () => {
   const [orders, setOrders]                   = useState([]);
   const [loading, setLoading]                 = useState(true);
@@ -137,7 +137,7 @@ const Orders = () => {
       if (!order?.orderItemId) { alert("Order item id not found"); return; }
       if (!window.confirm(`Request return for Order #${order.id}?`)) return;
       setReturnLoadingId(order.orderItemId);
-      const res  = await fetch("${API_BASE}/return-refund/request", {
+      const res  = await fetch(`${API_BASE}/return-refund/request`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderItemId: order.orderItemId, reason: "Return requested by user", status: "RETURN_REQUESTED", userId: getUser()?.id || null }),
       });
@@ -158,7 +158,7 @@ const Orders = () => {
       if (!ratingInput) return;
       const rating = Number(ratingInput);
       if (isNaN(rating) || rating < 1 || rating > 5) { alert("Rating must be between 1 and 5"); return; }
-      const res = await fetch("${API_BASE}/api/products/review", {
+      const res = await fetch(`${API_BASE}/api/products/review`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId: order.productId, userId: getUser()?.id || null, userName: getUser()?.name || "User", comment: comment.trim(), rating }),
       });
@@ -185,7 +185,7 @@ const Orders = () => {
       if (!user?.id) { alert("Please login first"); return; }
       if (!order?.productId) { alert("Product id not found"); return; }
       setActionLoadingId(order.id);
-      const res = await fetch("${API_BASE}/api/cart/add", {
+      const res = await fetch(`${API_BASE}/api/cart/add`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.id, productId: order.productId, quantity: 1 }),
       });

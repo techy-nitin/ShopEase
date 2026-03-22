@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
+import { API_BASE } from "./config";
 export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -66,7 +66,7 @@ export default function ProductDetailPage() {
       if (!userId) { alert("Please login first"); return; }
       if (!id)     { alert("Product id not found"); return; }
       setCartLoading(true);
-      const res = await fetch("${API_BASE}/api/cart/add", {
+      const res = await fetch(`${API_BASE}/api/cart/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: Number(userId), productId: Number(id), quantity: 1 }),
@@ -83,7 +83,7 @@ export default function ProductDetailPage() {
       const userId = getUserId();
       if (!userId) { alert("Please login first"); return; }
       setWishlistLoading(true);
-      const res = await fetch("${API_BASE}/wishlist/add", {
+      const res = await fetch(`${API_BASE}/wishlist/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: Number(userId), productId: Number(id) }),

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { API_BASE } from "./config";
 // ─── Config ───────────────────────────────────────────────────────────────────
 const itemConfig = {
   mobiles: {

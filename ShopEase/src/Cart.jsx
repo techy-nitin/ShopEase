@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import anima from "./assets/animation.mp4";
-
+import { API_BASE } from "./config";
 export default function CartPage() {
   const [cartItems, setCartItems]   = useState([]);
   const [loading, setLoading]       = useState(true);
@@ -81,7 +81,7 @@ export default function CartPage() {
     try {
       setUpdatingId(item.id);
       setCartItems((prev) => prev.map((c) => c.id === item.id ? { ...c, quantity: c.quantity + 1 } : c));
-      fetch("${API_BASE}/api/cart/add", {
+      fetch(`${API_BASE}/api/cart/add`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: Number(item.userId), productId: Number(item.productId), quantity: 1 }),
       }).catch(() => alert("Failed to update cart"));
@@ -95,7 +95,7 @@ export default function CartPage() {
       const newQty = item.quantity - 1;
       setCartItems((prev) => prev.map((c) => c.id === item.id ? { ...c, quantity: newQty } : c));
       await fetch(`${API_BASE}/api/cart/${item.id}`, { method: "DELETE" });
-      await fetch("${API_BASE}/api/cart/add", {
+      await fetch(`${API_BASE}/api/cart/add`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: Number(item.userId), productId: Number(item.productId), quantity: newQty }),
       });
@@ -107,7 +107,7 @@ export default function CartPage() {
     try {
       const userId = getUserId();
       if (!userId) { alert("Please login first"); return; }
-      const wishRes = await fetch("${API_BASE}/wishlist/add", {
+      const wishRes = await fetch(`${API_BASE}/wishlist/add`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: Number(userId), productId: Number(item.productId) }),
       });

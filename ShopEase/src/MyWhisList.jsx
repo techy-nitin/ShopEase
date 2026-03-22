@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Photo from "./assets/emptty.png";
-
+import { API_BASE } from "./config";
 // ─── Star Rating ──────────────────────────────────────────────────────────────
 const StarRating = ({ rating, reviews }) => (
   <div style={s.ratingRow}>
@@ -108,7 +108,7 @@ export default function Wishlist() {
       const userId = getUserId();
       if (!userId) { alert("Please login first"); return; }
 
-      const res = await fetch("${API_BASE}/api/cart/add", {
+      const res = await fetch(`${API_BASE}/api/cart/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: Number(userId), productId: Number(item.productId), quantity: 1 }),

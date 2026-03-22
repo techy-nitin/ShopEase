@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { API_BASE } from "./config";
 export default function CheckoutOrder() {
   const navigate = useNavigate();
 
@@ -70,7 +70,7 @@ export default function CheckoutOrder() {
         alert("Please fill all delivery details"); return;
       }
       setPlacingOrder(true);
-      const res = await fetch("${API_BASE}/orders/place", {
+      const res = await fetch(`${API_BASE}/orders/place`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

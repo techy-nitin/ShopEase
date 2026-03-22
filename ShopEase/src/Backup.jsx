@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-
+import { API_BASE } from "./config";
 export default function ProductListingPage() {
   const [searchParams] = useSearchParams();
 
@@ -29,7 +29,7 @@ export default function ProductListingPage() {
   };
 
   useEffect(() => {
-    let url = "${API_BASE}/api/products";
+    let url = `${API_BASE}/api/products`;
 
     if (keyword) {
       url = `${API_BASE}/api/products/search?keyword=${encodeURIComponent(keyword)}`;
@@ -124,7 +124,7 @@ export default function ProductListingPage() {
         productId: Number(productId),
       };
 
-      const res = await fetch("${API_BASE}/wishlist/add", {
+      const res = await fetch(`${API_BASE}/wishlist/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

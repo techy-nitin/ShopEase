@@ -96,7 +96,7 @@ export default function AddProduct() {
         imageUrl: formData.imageUrl.trim(),
       };
 
-      const res = await fetch("${API_BASE}/api/seller/products", {
+      const res = await fetch(`${API_BASE}/api/seller/products`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
