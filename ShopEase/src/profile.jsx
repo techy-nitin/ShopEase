@@ -1,34 +1,40 @@
 import React, { useState } from "react";
 import { API_BASE } from "./config";
-
+import { useNavigate } from "react-router-dom";
 export default function ProfilePage() {
   const [focus, setFocus] = useState(null);
 
   // ✅ Get current user from localStorage
 const currentUser = JSON.parse(localStorage.getItem("user"));
 console.log("currentUser:", currentUser); // ✅ Add this line
-  const handleDelete = async (userId) => {  
+  const navigate = useNavigate();
+
+  const handleDelete = async (userId) => {
     const isConfirmed = window.confirm("Delete account permanently?");
     if (!isConfirmed) return;
 
     try {
-        const response = await fetch(`${API_BASE}/api/auth/delete/${userId}`, {
-    method: "DELETE", 
-});
+      const response = await fetch(`${API_BASE}/api/auth/delete/${userId}`, {
+        method: "DELETE",
+      });
 
-        const data = await response.json();
-
-        if (response.ok) {
-            localStorage.removeItem("user"); // ✅ Clear user on delete
-            window.location.href = "/login";
-        } else {
-            alert(data.error || "Failed to delete account");
-        }
+      if (response.ok) {
+        localStorage.removeItem("user");
+        navigate("/login");
+      } else {
+        let errorMessage = "Failed to delete account";
+        try {
+          const data = await response.json();
+          errorMessage = data.error || errorMessage;
+        } catch {}
+        alert(errorMessage);
+      }
     } catch (error) {
-        console.error(error);
-        alert("Something went wrong");
+      console.error(error);
+      alert("Something went wrong");
     }
   };
+
 
   const styles = {
     container: {
