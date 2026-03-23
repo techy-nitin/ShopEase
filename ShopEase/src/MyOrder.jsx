@@ -12,9 +12,9 @@ const Orders = () => {
   const getUser   = () => { try { return JSON.parse(localStorage.getItem("user")); } catch { return null; } };
   const getUserId = () => getUser()?.id;
 
-  const normalizeStatus = (status) =>
-    String(status || "PLACED").trim().toUpperCase().replace(/\s+/g, "_");
-
+ const normalizeStatus = (status) => {
+  return status?.toUpperCase().replace(/\s+/g, "_");
+};
   const normalizeOrder = (order) => ({
     ...order,
     status: normalizeStatus(order.status),
@@ -110,10 +110,13 @@ const Orders = () => {
   };
   const canShowReviewButtons = (status, productId) => normalizeStatus(status) === "DELIVERED" && !!productId;
   const canShowCancel = (orderDate, status) => {
-    if (!orderDate) return false;
-    if (!["PLACED", "CONFIRMED"].includes(normalizeStatus(status))) return false;
-    return (Date.now() - new Date(orderDate).getTime()) / (1000 * 60) <= 30;
-  };
+  if (!status) return false;
+
+  const normalized = normalizeStatus(status);
+
+  // Button visible until order shipped
+  return ["PLACED", "CONFIRMED", "PROCESSING"].includes(normalized);
+};
   const getRemainingCancelMinutes = (orderDate) => {
     if (!orderDate) return 0;
     return Math.max(0, Math.ceil(30 - (Date.now() - new Date(orderDate).getTime()) / (1000 * 60)));
