@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-
+import { API_BASE } from "./config";
 export default function FooterPages() {
   const location = useLocation();
 

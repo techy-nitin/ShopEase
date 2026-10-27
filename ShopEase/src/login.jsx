@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { API_BASE } from "./config";
 export default function SlidingAuth() {
   const navigate = useNavigate();
   const canvasRef = useRef(null);
@@ -83,8 +83,8 @@ export default function SlidingAuth() {
     setError("");
     try {
       const url = isSignUp
-        ? "http://localhost:8081/api/auth/signup"
-        : "http://localhost:8081/api/auth/login";
+        ? `${API_BASE}/api/auth/signup`
+        : `${API_BASE}/api/auth/login`;
       const payload = isSignUp
         ? { name: formdata.name, email: formdata.email, password: formdata.password }
         : { email: formdata.email, password: formdata.password };

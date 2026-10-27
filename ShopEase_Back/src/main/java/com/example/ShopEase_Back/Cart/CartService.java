@@ -1,7 +1,5 @@
 package com.example.ShopEase_Back.Cart;
 
-import com.example.ShopEase_Back.ProductData.ProductEntity;
-import com.example.ShopEase_Back.ProductData.ProductRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,9 +11,6 @@ public class CartService {
 
     @Autowired
     private CartRepo cartRepo;
-
-    @Autowired
-    private ProductRepo productRepo;
 
     public CartEntity addCart(CartEntity cart) {
         if (cart.getUserId() == null) {
@@ -30,33 +25,14 @@ public class CartService {
             cart.setQuantity(1);
         }
 
-        ProductEntity product = productRepo.findById(cart.getProductId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-
-        Integer stock = product.getStock() == null ? 0 : product.getStock();
-
-        if (stock <= 0) {
-            throw new RuntimeException("Product is out of stock");
-        }
-
         CartEntity existing = cartRepo
                 .findByUserIdAndProductId(cart.getUserId(), cart.getProductId())
                 .orElse(null);
 
         if (existing != null) {
             Integer oldQty = existing.getQuantity() == null ? 0 : existing.getQuantity();
-            Integer newQty = oldQty + cart.getQuantity();
-
-            if (newQty > stock) {
-                throw new RuntimeException("Only " + stock + " item(s) available in stock");
-            }
-
-            existing.setQuantity(newQty);
+            existing.setQuantity(oldQty + cart.getQuantity());
             return cartRepo.save(existing);
-        }
-
-        if (cart.getQuantity() > stock) {
-            throw new RuntimeException("Only " + stock + " item(s) available in stock");
         }
 
         cart.setAddedAt(LocalDateTime.now());

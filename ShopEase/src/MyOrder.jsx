@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-
+import { API_BASE } from "./config";
 const Orders = () => {
   const [orders, setOrders]                   = useState([]);
   const [loading, setLoading]                 = useState(true);
@@ -12,9 +12,9 @@ const Orders = () => {
   const getUser   = () => { try { return JSON.parse(localStorage.getItem("user")); } catch { return null; } };
   const getUserId = () => getUser()?.id;
 
-  const normalizeStatus = (status) =>
-    String(status || "PLACED").trim().toUpperCase().replace(/\s+/g, "_");
-
+ const normalizeStatus = (status) => {
+  return status?.toUpperCase().replace(/\s+/g, "_");
+};
   const normalizeOrder = (order) => ({
     ...order,
     status: normalizeStatus(order.status),
@@ -26,7 +26,7 @@ const Orders = () => {
   const fetchLatestReturnStatus = async (orderItemId) => {
     try {
       if (!orderItemId) return null;
-      const res  = await fetch(`http://localhost:8081/return-refund/latest/${orderItemId}`);
+      const res  = await fetch(`${API_BASE}/return-refund/latest/${orderItemId}`);
       if (!res.ok) return null;
       const data = await res.json();
       return data?.message ? null : data;
@@ -38,7 +38,7 @@ const Orders = () => {
       setLoading(true);
       const userId = getUserId();
       if (!userId) { setOrders([]); return; }
-      const res  = await fetch(`http://localhost:8081/orders/buyer/${userId}`);
+      const res  = await fetch(`${API_BASE}/orders/buyer/${userId}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to fetch orders");
       const safeOrders = Array.isArray(data) ? data.map(normalizeOrder) : [];
@@ -110,10 +110,13 @@ const Orders = () => {
   };
   const canShowReviewButtons = (status, productId) => normalizeStatus(status) === "DELIVERED" && !!productId;
   const canShowCancel = (orderDate, status) => {
-    if (!orderDate) return false;
-    if (!["PLACED", "CONFIRMED"].includes(normalizeStatus(status))) return false;
-    return (Date.now() - new Date(orderDate).getTime()) / (1000 * 60) <= 30;
-  };
+  if (!status) return false;
+
+  const normalized = normalizeStatus(status);
+
+  // Button visible until order shipped
+  return ["PLACED", "CONFIRMED", "PROCESSING"].includes(normalized);
+};
   const getRemainingCancelMinutes = (orderDate) => {
     if (!orderDate) return 0;
     return Math.max(0, Math.ceil(30 - (Date.now() - new Date(orderDate).getTime()) / (1000 * 60)));
@@ -121,7 +124,7 @@ const Orders = () => {
 
   const downloadInvoice = async (orderId) => {
     try {
-      const res = await fetch(`http://localhost:8081/orders/${orderId}/download-invoice`);
+      const res = await fetch(`${API_BASE}/orders/${orderId}/download-invoice`);
       if (!res.ok) throw new Error("Failed to download invoice");
       const blob = await res.blob();
       const url  = window.URL.createObjectURL(blob);
@@ -137,7 +140,7 @@ const Orders = () => {
       if (!order?.orderItemId) { alert("Order item id not found"); return; }
       if (!window.confirm(`Request return for Order #${order.id}?`)) return;
       setReturnLoadingId(order.orderItemId);
-      const res  = await fetch("http://localhost:8081/return-refund/request", {
+      const res  = await fetch(`${API_BASE}/return-refund/request`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderItemId: order.orderItemId, reason: "Return requested by user", status: "RETURN_REQUESTED", userId: getUser()?.id || null }),
       });
@@ -158,7 +161,7 @@ const Orders = () => {
       if (!ratingInput) return;
       const rating = Number(ratingInput);
       if (isNaN(rating) || rating < 1 || rating > 5) { alert("Rating must be between 1 and 5"); return; }
-      const res = await fetch("http://localhost:8081/api/products/review", {
+      const res = await fetch(`${API_BASE}/api/products/review`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId: order.productId, userId: getUser()?.id || null, userName: getUser()?.name || "User", comment: comment.trim(), rating }),
       });
@@ -173,7 +176,7 @@ const Orders = () => {
       const user = getUser();
       if (!order?.productId) { alert("Product not found"); return; }
       if (!user?.id) { alert("User not found"); return; }
-      const res = await fetch(`http://localhost:8081/api/products/review/product/${order.productId}/user/${user.id}`, { method: "DELETE" });
+      const res = await fetch(`${API_BASE}/api/products/review/product/${order.productId}/user/${user.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error((await res.text()) || "Failed to delete review");
       alert("Review deleted successfully");
     } catch (err) { alert(err.message || "Failed to delete review"); }
@@ -185,7 +188,7 @@ const Orders = () => {
       if (!user?.id) { alert("Please login first"); return; }
       if (!order?.productId) { alert("Product id not found"); return; }
       setActionLoadingId(order.id);
-      const res = await fetch("http://localhost:8081/api/cart/add", {
+      const res = await fetch(`${API_BASE}/api/cart/add`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.id, productId: order.productId, quantity: 1 }),
       });
@@ -201,7 +204,7 @@ const Orders = () => {
     try {
       if (!window.confirm(`Cancel Order #${order.id}?`)) return;
       setActionLoadingId(order.id);
-      const res  = await fetch(`http://localhost:8081/orders/${order.id}/cancel`, { method: "POST" });
+      const res  = await fetch(`${API_BASE}/orders/${order.id}/cancel`, { method: "POST" });
       const text = await res.text();
       if (!res.ok) throw new Error(text || "Failed to cancel order");
       setOrders((prev) => prev.map((item) => item.id === order.id ? { ...item, status: "CANCELLED" } : item));
@@ -318,8 +321,8 @@ const Orders = () => {
 
             return (
               <div
-key={`${order.id}-${order.orderItemId}`}                
-className="od-card"
+                key={order.id}
+                className="od-card"
                 style={{ ...s.card, animationDelay: `${oi * 0.06}s` }}
               >
                 {/* Top bar accent */}

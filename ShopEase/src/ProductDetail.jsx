@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
+import { API_BASE } from "./config";
 export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ export default function ProductDetailPage() {
   useEffect(() => {
     async function fetchProduct() {
       try {
-        const res = await fetch(`http://localhost:8081/api/products/${id}`);
+        const res = await fetch(`${API_BASE}/api/products/${id}`);
         if (!res.ok) throw new Error("Failed to fetch product");
         const result = await res.json();
         setData(result);
@@ -31,7 +31,7 @@ export default function ProductDetailPage() {
 
         const userId = getUserId();
         if (userId) {
-          const wishRes  = await fetch(`http://localhost:8081/wishlist/${userId}`);
+          const wishRes  = await fetch(`${API_BASE}/wishlist/${userId}`);
           const wishData = await wishRes.json();
           if (wishRes.ok && Array.isArray(wishData)) {
             setWishlist(wishData.some((item) => Number(item.productId) === Number(id)));
@@ -66,7 +66,7 @@ export default function ProductDetailPage() {
       if (!userId) { alert("Please login first"); return; }
       if (!id)     { alert("Product id not found"); return; }
       setCartLoading(true);
-      const res = await fetch("http://localhost:8081/api/cart/add", {
+      const res = await fetch(`${API_BASE}/api/cart/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: Number(userId), productId: Number(id), quantity: 1 }),
@@ -83,7 +83,7 @@ export default function ProductDetailPage() {
       const userId = getUserId();
       if (!userId) { alert("Please login first"); return; }
       setWishlistLoading(true);
-      const res = await fetch("http://localhost:8081/wishlist/add", {
+      const res = await fetch(`${API_BASE}/wishlist/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: Number(userId), productId: Number(id) }),
@@ -279,22 +279,14 @@ export default function ProductDetailPage() {
 
             {/* Action buttons */}
             <div style={s.actionRow}>
-             <button
-  className="pd-btn-primary"
-  style={{
-    ...s.btnCart,
-    background: product.stock === 0 ? "#444" : "#12daa8",
-    cursor: product.stock === 0 ? "not-allowed" : "pointer"
-  }}
-  onClick={handleAddToCart}
-  disabled={cartLoading || product.stock === 0}
->
-  {product.stock === 0
-    ? "Out of Stock"
-    : cartLoading
-    ? "Adding…"
-    : "Add to Cart"}
-</button>
+              <button
+                className="pd-btn-primary"
+                style={s.btnCart}
+                onClick={handleAddToCart}
+                disabled={cartLoading || product.stock === 0}
+              >
+                {cartLoading ? "Adding…" : "Add to Cart"}
+              </button>
               <button
                 className="pd-btn-wishlist"
                 style={{

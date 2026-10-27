@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { API_BASE } from "./config";
 export default function CheckoutOrder() {
   const navigate = useNavigate();
 
@@ -25,14 +25,14 @@ export default function CheckoutOrder() {
       const userId = getUserId();
       if (!userId) { setCartItems([]); return; }
 
-      const res      = await fetch(`http://localhost:8081/api/cart/${userId}`);
+      const res      = await fetch(`${API_BASE}/api/cart/${userId}`);
       const cartRows = await res.json();
       if (!res.ok) throw new Error(cartRows.error || "Failed to fetch cart");
 
       const fullCartData = await Promise.all(
         (Array.isArray(cartRows) ? cartRows : []).map(async (item) => {
           try {
-            const productRes  = await fetch(`http://localhost:8081/api/products/${item.productId}`);
+            const productRes  = await fetch(`${API_BASE}/api/products/${item.productId}`);
             const productData = await productRes.json();
             if (!productRes.ok) throw new Error("Failed to fetch product");
             const product = productData.product || {};
@@ -70,27 +70,13 @@ export default function CheckoutOrder() {
         alert("Please fill all delivery details"); return;
       }
       setPlacingOrder(true);
-      const res = await fetch("http://localhost:8081/orders/place", {
+      const res = await fetch(`${API_BASE}/orders/place`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-  buyerId: Number(userId),
-  totalAmount: Number(totalAmount),
-
-  fullName: formData.fullName,
-  phone: formData.phone,
-  address: formData.address,
-  city: formData.city,
-  state: formData.state,
-  pincode: formData.pincode,
-  paymentMethod: formData.paymentMethod,
-
-  items: cartItems.map((i) => ({
-    productId: Number(i.productId),
-    quantity: Number(i.quantity),
-    price: Number(i.price)
-  })),
-}),
+          buyerId: Number(userId), totalAmount: Number(totalAmount),
+          items: cartItems.map((i) => ({ productId: Number(i.productId), quantity: Number(i.quantity), price: Number(i.price) })),
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to place order");
