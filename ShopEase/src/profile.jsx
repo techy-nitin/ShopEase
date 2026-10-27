@@ -1,41 +1,28 @@
 import React, { useState } from "react";
-import { API_BASE } from "./config";
-import { useNavigate } from "react-router-dom";
+
 export default function ProfilePage() {
   const [focus, setFocus] = useState(null);
-
-  // ✅ Get current user from localStorage
-const currentUser = JSON.parse(localStorage.getItem("user"));
-console.log("currentUser:", currentUser); // ✅ Add this line
-  const navigate = useNavigate();
-
-  const handleDelete = async (userId) => {
+  const handleDelete = async (userId) => {   // make function async
     const isConfirmed = window.confirm("Delete account permanently?");
     if (!isConfirmed) return;
 
     try {
-      const response = await fetch(`${API_BASE}/api/auth/delete/${userId}`, {
-        method: "DELETE",
-      });
+        const response = await fetch(`http://localhost:8081/delete/${userId}`, {
+            method: "DELETE",  // should be uppercase, though fetch is case-insensitive
+        });
 
-      if (response.ok) {
-        localStorage.removeItem("user");
-        navigate("/login");
-      } else {
-        let errorMessage = "Failed to delete account";
-        try {
-          const data = await response.json();
-          errorMessage = data.error || errorMessage;
-        } catch {}
-        alert(errorMessage);
-      }
+        const data = await response.json();
+
+        if (response.ok) {
+            window.location.href = "/login";
+        } else {
+            alert(data.error || "Failed to delete account");
+        }
     } catch (error) {
-      console.error(error);
-      alert("Something went wrong");
+        console.error(error);
+        alert("Something went wrong");
     }
-  };
-
-
+};
   const styles = {
     container: {
       background: "#0f1111",
@@ -120,7 +107,7 @@ console.log("currentUser:", currentUser); // ✅ Add this line
       border: "none",
       color: "black",
     },
-    delete: {
+     delete: {
       background: "Red",
       border: "none",
       color: "black",
@@ -159,13 +146,35 @@ console.log("currentUser:", currentUser); // ✅ Add this line
             />
           </div>
 
+          {/* Middle */}
+          {/* <div>
+            <label style={styles.label}>Middle Name</label>
+            <input
+              placeholder="Enter Middle Name"
+              style={styles.input("mname")}
+              onFocus={() => setFocus("mname")}
+              onBlur={() => setFocus(null)}
+            />
+          </div> */}
+
+          {/* Last */}
+          {/* <div>
+            <label style={styles.label}>Last Name</label>
+            <input
+              defaultValue="Sharma"
+              style={styles.input("lname")}
+              onFocus={() => setFocus("lname")}
+              onBlur={() => setFocus(null)}
+            />
+          </div> */}
+
           {/* Gender */}
           <div style={styles.full}>
             <div style={styles.radio}>
               <label><input type="radio" name="g" /> Female</label>
               <label><input type="radio" name="g" defaultChecked /> Male</label>
               <label><input type="radio" name="g" /> Transgender</label>
-              <label><input type="radio" name="g" /> I'd rather not say</label>
+              <label><input type="radio" name="g" /> I’d rather not say</label>
             </div>
           </div>
 
@@ -222,16 +231,15 @@ console.log("currentUser:", currentUser); // ✅ Add this line
 
         {/* Buttons */}
         <div style={styles.btnWrap}>
-          <button type="button" style={{ ...styles.btn, ...styles.discard }}>
+          <button style={{ ...styles.btn, ...styles.discard }}>
             DISCARD CHANGES
           </button>
-          <button type="button" style={{ ...styles.btn, ...styles.save }}>
+          <button style={{ ...styles.btn, ...styles.save }}>
             SAVE CHANGES
           </button>
-          <button
-            type="button"
-            onClick={() => handleDelete(currentUser?.id)}
-            style={{ ...styles.btn, ...styles.delete }}>
+           <button 
+          onClick={() => handleDelete(currentUser.id)}
+style={{ ...styles.btn, ...styles.delete }}>
             DELETE ACCOUNT
           </button>
         </div>

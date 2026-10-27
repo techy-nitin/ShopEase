@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { API_BASE } from "./config";
+
 const brandConfig = {
   apple: {
     title: "Apple",
@@ -72,7 +72,7 @@ export default function BrandPage() {
       return;
     }
     setProductsLoading(true);
-    fetch(`${API_BASE}/api/products/category/${brand.categoryId}`)
+    fetch(`http://localhost:8081/api/products/category/${brand.categoryId}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch brand products");
         return res.json();

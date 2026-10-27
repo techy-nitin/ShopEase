@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./Home";
 import EmptyCart from "./Cart";
 import Navbar from "./navbar";
@@ -20,12 +20,11 @@ import BankOfferPage from "./BankOfferPage";
 import BrandPage from "./BrandPage";
 import CategorySliderPage from "./SliderPage";
 import ItemSliderPage from "./itemsliderpage";
-
 function Layout({ children }) {
   return (
     <>
-      <Navbar />
-      {children}
+       <Navbar />
+        {children}
       <Footer />
     </>
   );
@@ -37,7 +36,7 @@ function NotFound() {
 
 function App() {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <Routes>
         <Route
           path="/"
@@ -50,19 +49,19 @@ function App() {
           }
         />
         <Route
-          path="/brand/:brandName"
-          element={
-            <Layout>
-              <BrandPage />
-            </Layout>
-          }
-        />
-        <Route
+  path="/brand/:brandName"
+  element={
+    <Layout>
+      <BrandPage />
+    </Layout>
+  }
+/>
+<Route
           path="/slider/:category"
           element={
             <Layout>
               <ProtectedRoute>
-                <CategorySliderPage />
+                <CategorySliderPage/>
               </ProtectedRoute>
             </Layout>
           }
@@ -97,7 +96,7 @@ function App() {
             </Layout>
           }
         />
-        <Route
+         <Route
           path="/footer-pages"
           element={
             <Layout>
@@ -113,7 +112,7 @@ function App() {
             </Layout>
           }
         />
-        <Route
+         <Route
           path="/seller/add-product"
           element={
             <Layout>
@@ -137,7 +136,7 @@ function App() {
             </Layout>
           }
         />
-        <Route
+         <Route
           path="/seller-reg"
           element={
             <Layout>
@@ -153,7 +152,7 @@ function App() {
             </Layout>
           }
         />
-        <Route
+         <Route
           path="/products"
           element={
             <Layout>
@@ -161,7 +160,7 @@ function App() {
             </Layout>
           }
         />
-        <Route
+         <Route
           path="/seller-dashboard"
           element={
             <Layout>
@@ -177,16 +176,15 @@ function App() {
             </Layout>
           }
         />
-        <Route
-          path="*"
-          element={
-            <div style={{ fontSize: "40px", textAlign: "center", marginTop: "100px", background: "White" }}>
-              404 PAGE NOT FOUND
-            </div>
-          }
-        />
-      </Routes>
-    </HashRouter>
+<Route
+  path="*"
+  element={
+    <div style={{ fontSize: "40px", textAlign: "center", marginTop: "100px" , background:"White" }}>
+      404 PAGE NOT FOUND
+    </div>
+  }
+/>      </Routes>
+    </BrowserRouter>
   );
 }
 
