@@ -1,5 +1,5 @@
 package com.example.ShopEase_Back.Order;
-
+import com.example.ShopEase_Back.Payment.PaymentEntity;
 import com.example.ShopEase_Back.Cart.CartEntity;
 import com.example.ShopEase_Back.Cart.CartRepo;
 import com.example.ShopEase_Back.ProductData.ImageRepo;
@@ -17,7 +17,7 @@ import com.itextpdf.layout.properties.UnitValue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.example.ShopEase_Back.Payment.PaymentRepo;
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -43,6 +43,9 @@ public class OrderService {
     @Autowired
     private ImageRepo imageRepo;
 
+    @Autowired
+    private PaymentRepo paymentRepo;
+    @Transactional
     public OrderEntity placeOrder(ProductOrderRequest request) {
         if (request.getBuyerId() == null) {
             throw new RuntimeException("buyerId is required");
@@ -50,6 +53,16 @@ public class OrderService {
 
         if (request.getItems() == null || request.getItems().isEmpty()) {
             throw new RuntimeException("Order items are required");
+        }
+
+        if (isBlank(request.getFullName()) ||
+                isBlank(request.getPhone()) ||
+                isBlank(request.getAddress()) ||
+                isBlank(request.getCity()) ||
+                isBlank(request.getState()) ||
+                isBlank(request.getPincode()) ||
+                isBlank(request.getPaymentMethod())) {
+            throw new RuntimeException("Delivery details are required");
         }
 
         OrderEntity order = new OrderEntity();
@@ -61,17 +74,34 @@ public class OrderService {
         OrderEntity savedOrder = ordersRepo.save(order);
 
         for (OrderItemRequest item : request.getItems()) {
+            ProductEntity product = productRepo.findById(item.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+
+            if (item.getQuantity() == null || item.getQuantity() <= 0) {
+                throw new RuntimeException("Invalid quantity");
+            }
+
+            if (product.getStock() < item.getQuantity()) {
+                throw new RuntimeException(
+                        "Only " + product.getStock() + " items left for product: " + product.getName()
+                );
+            }
+
+            product.setStock(product.getStock() - item.getQuantity());
+            productRepo.save(product);
+
             OrderItemEntity orderItem = new OrderItemEntity();
             orderItem.setOrderId(savedOrder.getId());
             orderItem.setProductId(item.getProductId());
             orderItem.setQuantity(item.getQuantity());
             orderItem.setPrice(item.getPrice());
+
             orderItemRepo.save(orderItem);
         }
 
         List<OrderItemEntity> savedItems = orderItemRepo.findByOrderId(savedOrder.getId());
 
-        String base64Invoice = generateInvoicePDF(savedOrder, savedItems);
+        String base64Invoice = generateInvoicePDF(savedOrder, savedItems, request);
         if (base64Invoice == null || base64Invoice.isBlank()) {
             throw new RuntimeException("Invoice generation failed");
         }
@@ -81,11 +111,18 @@ public class OrderService {
 
         List<CartEntity> cartItems = cartRepo.findByUserId(request.getBuyerId());
         cartRepo.deleteAll(cartItems);
+        PaymentEntity payment = new PaymentEntity();
+        payment.setOrderId(savedOrder.getId());
+        payment.setAmount(savedOrder.getTotalAmount());
+        payment.setPaymentMethod(request.getPaymentMethod());
+        payment.setPaymentStatus("PENDING");
+        payment.setCreatedAt(LocalDateTime.now());
 
+        paymentRepo.save(payment);
         return savedOrder;
     }
 
-    private String generateInvoicePDF(OrderEntity order, List<OrderItemEntity> items) {
+    private String generateInvoicePDF(OrderEntity order, List<OrderItemEntity> items, ProductOrderRequest request) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             PdfWriter writer = new PdfWriter(baos);
@@ -111,8 +148,15 @@ public class OrderService {
             infoTable.setWidth(UnitValue.createPercentValue(100));
 
             infoTable.addCell(new Cell()
-                    .add(new Paragraph("Bill To").setBold().setFontSize(12))
+                    .add(new Paragraph("Bill To / Shipping Details").setBold().setFontSize(12))
                     .add(new Paragraph("Buyer ID: " + order.getBuyerId()).setFontSize(11))
+                    .add(new Paragraph("Full Name: " + safe(request.getFullName())).setFontSize(11))
+                    .add(new Paragraph("Phone: " + safe(request.getPhone())).setFontSize(11))
+                    .add(new Paragraph("Address: " + safe(request.getAddress())).setFontSize(11))
+                    .add(new Paragraph("City: " + safe(request.getCity())).setFontSize(11))
+                    .add(new Paragraph("State: " + safe(request.getState())).setFontSize(11))
+                    .add(new Paragraph("Pincode: " + safe(request.getPincode())).setFontSize(11))
+                    .add(new Paragraph("Payment Method: " + safe(request.getPaymentMethod())).setFontSize(11))
                     .setPadding(10));
 
             infoTable.addCell(new Cell()
@@ -230,6 +274,14 @@ public class OrderService {
         }
     }
 
+    private String safe(String value) {
+        return value == null || value.isBlank() ? "N/A" : value;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
     public List<OrderEntity> getOrdersByBuyer(Integer buyerId) {
         return ordersRepo.findByBuyerId(buyerId);
     }
@@ -274,6 +326,7 @@ public class OrderService {
         return ordersRepo.save(order);
     }
 
+    @Transactional
     public OrderEntity deliverOrder(Integer orderId) {
         OrderEntity order = ordersRepo.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
@@ -283,9 +336,19 @@ public class OrderService {
         }
 
         order.setStatus("DELIVERED");
-        return ordersRepo.save(order);
+        OrderEntity savedOrder = ordersRepo.save(order);
+
+        PaymentEntity payment = paymentRepo.findByOrderId(orderId)
+                .orElseThrow(() -> new RuntimeException("Payment not found"));
+
+        payment.setPaymentStatus("SUCCESS");
+        payment.setPaidAt(LocalDateTime.now());
+        paymentRepo.save(payment);
+
+        return savedOrder;
     }
 
+    @Transactional
     public OrderEntity cancelOrder(Integer orderId) {
         OrderEntity order = ordersRepo.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
@@ -296,45 +359,74 @@ public class OrderService {
             throw new RuntimeException("Order cannot be cancelled");
         }
 
+        if ("CANCELLED".equalsIgnoreCase(order.getStatus())) {
+            return order;
+        }
+
+        List<OrderItemEntity> items = orderItemRepo.findByOrderId(orderId);
+
+        for (OrderItemEntity item : items) {
+            ProductEntity product = productRepo.findById(item.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+
+            int qty = item.getQuantity() != null ? item.getQuantity() : 0;
+            product.setStock(product.getStock() + qty);
+            productRepo.save(product);
+        }
+
         order.setStatus("CANCELLED");
+        PaymentEntity payment = paymentRepo.findByOrderId(orderId).orElse(null);
+        if (payment != null) {
+            payment.setPaymentStatus("CANCELLED");
+            paymentRepo.save(payment);
+        }
         return ordersRepo.save(order);
     }
 
     public List<OrderSummaryDto> getOrderSummaryByBuyer(Integer buyerId) {
         List<Object[]> orders = ordersRepo.findOrderSummaryWithoutInvoice(buyerId);
+        List<OrderSummaryDto> result = new java.util.ArrayList<>();
 
-        return orders.stream().map(row -> {
-            OrderSummaryDto dto = new OrderSummaryDto();
+        for (Object[] row : orders) {
+            Integer orderId = ((Number) row[0]).intValue();
+            Integer orderBuyerId = ((Number) row[1]).intValue();
+            java.time.LocalDateTime orderDate = (java.time.LocalDateTime) row[2];
+            Double totalAmount = ((Number) row[3]).doubleValue();
+            String orderStatus = (String) row[4];
 
-            dto.setId(((Number) row[0]).intValue());
-            dto.setBuyerId(((Number) row[1]).intValue());
-            dto.setOrderDate((java.time.LocalDateTime) row[2]);
-            dto.setTotalAmount(((Number) row[3]).doubleValue());
-            dto.setStatus((String) row[4]);
+            List<OrderItemEntity> items = orderItemRepo.findByOrderId(orderId);
+            if (items == null || items.isEmpty()) {
+                continue;
+            }
 
-            List<OrderItemEntity> items = orderItemRepo.findByOrderId(dto.getId());
+            for (OrderItemEntity item : items) {
+                OrderSummaryDto dto = new OrderSummaryDto();
+                dto.setId(orderId);
+                dto.setBuyerId(orderBuyerId);
+                dto.setOrderDate(orderDate);
+                dto.setTotalAmount(totalAmount);
+                dto.setStatus(orderStatus);
 
-            if (items != null && !items.isEmpty()) {
-                OrderItemEntity firstItem = items.get(0);
+                dto.setOrderItemId(item.getId());
+                dto.setProductId(item.getProductId());
+                dto.setQuantity(item.getQuantity());
 
-                dto.setOrderItemId(firstItem.getId());
-                dto.setProductId(firstItem.getProductId());
-                dto.setQuantity(firstItem.getQuantity());
-
-                if (firstItem.getProductId() != null) {
-                    productRepo.findById(firstItem.getProductId()).ifPresent(product -> {
+                if (item.getProductId() != null) {
+                    productRepo.findById(item.getProductId()).ifPresent(product -> {
                         dto.setProductName(product.getName());
                     });
 
-                    List<ProductImage> images = imageRepo.findByProductId(firstItem.getProductId());
+                    List<ProductImage> images = imageRepo.findByProductId(item.getProductId());
                     if (images != null && !images.isEmpty()) {
                         dto.setProductImage(images.get(0).getImageUrl());
                     }
                 }
-            }
 
-            return dto;
-        }).toList();
+                result.add(dto);
+            }
+        }
+
+        return result;
     }
 
     @Transactional
@@ -347,7 +439,9 @@ public class OrderService {
         if (!isLikelyBase64(pdfInvoice)) {
             List<OrderItemEntity> items = orderItemRepo.findByOrderId(orderId);
 
-            String base64Invoice = generateInvoicePDF(order, items);
+            ProductOrderRequest request = new ProductOrderRequest();
+            String base64Invoice = generateInvoicePDF(order, items, request);
+
             if (base64Invoice == null || base64Invoice.isBlank()) {
                 throw new RuntimeException("Invoice generation failed");
             }
