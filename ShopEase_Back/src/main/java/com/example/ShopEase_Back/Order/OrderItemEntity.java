@@ -3,7 +3,6 @@ package com.example.ShopEase_Back.Order;
 import jakarta.persistence.*;
 
 import javax.annotation.processing.Generated;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "order_items")
@@ -24,7 +23,6 @@ public class OrderItemEntity {
 
     @Column(name="price")
     private Double price;
-
 
     public Integer getId() {
         return id;
@@ -65,6 +63,4 @@ public class OrderItemEntity {
     public void setPrice(Double price) {
         this.price = price;
     }
-
-
 }
